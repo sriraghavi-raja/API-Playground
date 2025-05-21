@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Playground - Results</title>
+    <style>
+        /* Base Styles - Copied from your index.html for consistency */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f0c29;
+            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .nav-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 0 5%;
+            background: rgba(15, 12, 41, 0.8);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #64ffda;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover:before {
+            width: 100%;
+        }
+        
+        .main-content {
+            padding: 7rem 5% 2rem;
+        }
+        
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 5%;
+            text-align: center;
+            color: #8892b0;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Result Page Specific Styles */
+        .result-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(43, 40, 80, 0.6);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 1s ease-out; /* Add fade-in animation to the container */
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 1rem; /* Space between items when wrapped */
+        }
+        
+        .result-title {
+            font-size: 2.5rem; /* Larger for impact */
+            background: linear-gradient(to right, #64ffda, #34ffe9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            padding: 0.8rem 1.8rem; /* Larger padding */
+            background: rgba(100, 255, 218, 0.1); /* Subtle background */
+            border: 1px solid #64ffda;
+            border-radius: 8px; /* More rounded */
+            color: #64ffda;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex; /* Align icon and text */
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-btn:hover {
+            background: #64ffda; /* Solid background on hover */
+            color: #0f0c29; /* Darker text on hover */
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.4); /* Glow effect */
+        }
+        
+        .result-section {
+            margin-bottom: 2.5rem; /* More spacing */
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1); /* Separator */
+            padding-bottom: 1.5rem;
+        }
+
+        .result-section:last-child {
+            border-bottom: none; /* No separator for the last section */
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.6rem; /* Slightly larger title */
+            margin-bottom: 1rem;
+            color: #64ffda;
+            border-left: 4px solid #34ffe9; /* Accent border */
+            padding-left: 1rem;
+        }
+        
+        .input-display, .output-display, .error-message {
+            background: rgba(0, 0, 0, 0.3); /* Darker background for code/data blocks */
+            padding: 1.5rem; /* More padding */
+            border-radius: 10px; /* More rounded corners */
+            margin-bottom: 1rem;
+            white-space: pre-wrap; /* Preserve whitespace and wrap long lines */
+            font-family: 'Fira Code', 'Cascadia Code', monospace; /* Monospace font for code */
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto; /* Enable horizontal scrolling for long lines */
+        }
+        
+        .output-display {
+            border-left: 5px solid #64ffda; /* Thicker accent border */
+        }
+
+        .error-message {
+            color: #ff6b6b; /* Red color for errors */
+            border-left: 5px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        /* JSON Syntax Highlighting */
+        .json-key { color: #8be9fd; } /* Aqua */
+        .json-string { color: #f1fa8c; } /* Yellow */
+        .json-number { color: #bd93f9; } /* Purple */
+        .json-boolean { color: #ff79c6; } /* Pink */
+        .json-null { color: #ff5555; } /* Red */
+        .json-array, .json-object { color: #f8f8f2; } /* White for brackets/braces */
+
+        /* Specific styles for learning content */
+        .learn-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #a8b2d1;
+        }
+
+        .learn-content strong {
+            color: #ccd6f6;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .result-title {
+                font-size: 2rem;
+            }
+            .back-btn {
+                width: 100%; /* Full width on smaller screens */
+                text-align: center;
+                justify-content: center;
+            }
+            .result-header {
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .result-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+            .section-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation" id="particles"></div>
+    
+    <div class="nav-container">
+        <nav>
+            <a href="index.html" class="logo">
+                <span>⚡</span> API Playground
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#features">Features</a>
+                <a href="#" onclick="alert('Documentation coming soon!')">Documentation</a>
+                <a href="#" onclick="alert('About page coming soon!')">About</a>
+                <a href="#" onclick="alert('Contact page coming soon!')">Contact</a>
+            </div>
+        </nav>
+    </div>
+    
+    <div class="main-content">
+        <div class="result-container" id="api-result-container">
+            <div class="result-header">
+                <h1 class="result-title">Loading API Result...</h1>
+                <a href="index.html" class="back-btn">← Back to Home</a>
+            </div>
+            <div class="result-section">
+                <h2 class="section-title">Please wait while we fetch the data...</h2>
+                <div class="output-display">Fetching...</div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 API Playground. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Background particles animation (same as index.html)
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            const particleCount = 100;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const size = Math.random() * 4 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                const duration = Math.random() * 50 + 10;
+                particle.style.animation = `float ${duration}s linear infinite`;
+                
+                const keyframes = `
+                    @keyframes float {
+                        0% { transform: translate(0, 0) rotate(0deg); }
+                        25% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(${Math.random() * 360}deg); }
+                        50% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(${Math.random() * 360}deg); }
+                        75% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(${Math.random() * 360}deg); }
+                        100% { transform: translate(0, 0) rotate(0deg); }
+                    }
+                `;
+                
+                const style = document.createElement('style');
+                style.textContent = keyframes;
+                document.head.appendChild(style);
+                
+                particles.appendChild(particle);
+            }
+        }
+
+        // Function to syntax highlight JSON
+        function syntaxHighlight(json) {
+            // Check if json is already a string, if not, stringify it
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            // HTML escape special characters
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Apply regex for syntax highlighting
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?|[\[\]\{\},])/g, 
+                function (match) {
+                    let cls = 'json-number'; // Default to number for digits
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key'; // Key if followed by colon
+                        } else {
+                            cls = 'json-string'; // String otherwise
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean'; // Boolean literals
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null'; // Null literal
+                    } else if (/^[[\]{}]/.test(match)) { // Handle array/object brackets/braces
+                        cls = 'json-array'; // Using a generic class for brackets, can refine if needed
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+        }
+
+        // Base URL for your Spring Boot API
+        const API_BASE_URL = 'http://localhost:8080/api'; // <--- IMPORTANT: Update this if your backend runs on a different port/host
+
+        // Function to call the Echo API
+        async function callEchoApi(message) {
+            const url = `${API_BASE_URL}/echo?message=${encodeURIComponent(message)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        // Function to call the Calculator API
+        async function callCalculatorApi(a, b, operation) {
+            const url = `${API_BASE_URL}/calculate?a=${a}&b=${b}&operation=${encodeURIComponent(operation)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        // Function to call the Fun Fact API
+        async function callFunFactApi() {
+            const url = `${API_BASE_URL}/fun/fact`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        // Function to call the Learn Topic API
+        async function callLearnTopicApi(topic) {
+            const url = `${API_BASE_URL}/learn?topic=${encodeURIComponent(topic)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        // Function to call the Code Snippet API
+        async function callCodeSnippetApi(query, language) {
+            const url = `${API_BASE_URL}/code-snippet?query=${encodeURIComponent(query)}&language=${encodeURIComponent(language)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        // Function to call the AI Tools API
+        async function callAiToolsApi(query) {
+            const url = `${API_BASE_URL}/ai-tools?query=${encodeURIComponent(query)}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+
+        // Load the API result based on URL parameters
+        async function loadApiResult() {
+            const container = document.getElementById('api-result-container');
+            const urlParams = new URLSearchParams(window.location.search);
+            const apiType = urlParams.get('type');
+            
+            let html = '';
+            let apiCallPromise;
+            let title = "API Result";
+            let inputDetails = '';
+
+            try {
+                if (!apiType) {
+                    throw new Error("No API type specified in the URL.");
+                }
+
+                switch(apiType) {
+                    case 'echo':
+                        const echoMessage = urlParams.get('message');
+                        if (!echoMessage) throw new Error('No message provided for Echo API.');
+                        title = 'Echo API Result';
+                        inputDetails = `<strong>Message:</strong> "${echoMessage}"`;
+                        apiCallPromise = callEchoApi(echoMessage);
+                        break;
+                        
+                    case 'calculator':
+                        const a = parseFloat(urlParams.get('a'));
+                        const b = parseFloat(urlParams.get('b'));
+                        const operation = urlParams.get('op');
+                        if (isNaN(a) || isNaN(b) || !operation) throw new Error('Invalid input for Calculator API.');
+                        title = 'Calculator API Result';
+                        inputDetails = `<strong>Numbers:</strong> a=${a}, b=${b}<br><strong>Operation:</strong> ${operation}`;
+                        apiCallPromise = callCalculatorApi(a, b, operation);
+                        break;
+                        
+                    case 'fun-fact':
+                        title = 'Fun Fact API Result';
+                        inputDetails = 'No specific input.';
+                        apiCallPromise = callFunFactApi();
+                        break;
+                        
+                    case 'learn-topic':
+                        const topic = urlParams.get('topic');
+                        if (!topic) throw new Error('No topic provided for Learn Topic API.');
+                        title = `Learn About: ${decodeURIComponent(topic)}`;
+                        inputDetails = `<strong>Topic:</strong> "${decodeURIComponent(topic)}"`;
+                        apiCallPromise = callLearnTopicApi(topic);
+                        break;
+                        
+                    case 'code-snippet':
+                        const query = urlParams.get('query');
+                        const language = urlParams.get('language');
+                        if (!query || !language) throw new Error('Missing query or language for Code Snippet API.');
+                        title = `Code Snippet: ${decodeURIComponent(query)} (${decodeURIComponent(language)})`;
+                        inputDetails = `<strong>Query:</strong> "${decodeURIComponent(query)}"<br><strong>Language:</strong> ${decodeURIComponent(language)}`;
+                        apiCallPromise = callCodeSnippetApi(query, language);
+                        break;
+                        
+                    case 'ai-tools':
+                        const toolQuery = urlParams.get('query');
+                        if (!toolQuery) throw new Error('No query provided for AI Tools API.');
+                        title = `AI Tool for: ${decodeURIComponent(toolQuery)}`;
+                        inputDetails = `<strong>Use Case:</strong> "${decodeURIComponent(toolQuery)}"`;
+                        apiCallPromise = callAiToolsApi(toolQuery);
+                        break;
+                    
+                    default:
+                        throw new Error(`Unknown API type: ${apiType}`);
+                }
+
+                const result = await apiCallPromise;
+
+                // Special handling for 'learn-topic' content as it's not pure JSON data
+                let outputContent = '';
+                if (apiType === 'learn-topic' && result.content) {
+                    outputContent = `<div class="learn-content">${result.content}</div>`;
+                } else if (apiType === 'code-snippet' && result.data && result.data.items && result.data.items.length > 0) {
+                    // For code snippets, try to show the first few question titles and links
+                    outputContent = '<div class="learn-content">Found snippets on Stack Overflow. Here are some top results:<ul>';
+                    result.data.items.slice(0, 5).forEach(item => { // Show top 5
+                        outputContent += `<li><a href="${item.link}" target="_blank" style="color: #64ffda;">${item.title}</a></li>`;
+                    });
+                    outputContent += `</ul><br>Full API response:<br><pre>${syntaxHighlight(result)}</pre></div>`;
+                } else {
+                    outputContent = `<pre>${syntaxHighlight(result)}</pre>`;
+                }
+
+                html = `
+                    <div class="result-header">
+                        <h1 class="result-title">${title}</h1>
+                        <a href="index.html" class="back-btn">← Back to Home</a>
+                    </div>
+                    <div class="result-section">
+                        <h2 class="section-title">Input</h2>
+                        <div class="input-display">${inputDetails}</div>
+                    </div>
+                    <div class="result-section">
+                        <h2 class="section-title">Output</h2>
+                        <div class="output-display">${outputContent}</div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error("Error fetching API result:", error);
+                html = `
+                    <div class="result-header">
+                        <h1 class="result-title">Error</h1>
+                        <a href="index.html" class="back-btn">← Back to Home</a>
+                    </div>
+                    <div class="result-section">
+                        <h2 class="section-title">Something went wrong!</h2>
+                        <div class="error-message">
+                            Failed to load API result. Please check the console for more details.<br>
+                            Error: ${error.message}<br>
+                            Make sure your Spring Boot backend is running at <strong>${API_BASE_URL}</strong>.
+                        </div>
+                    </div>
+                `;
+            } finally {
+                container.innerHTML = html;
+            }
+        }
+
+        // Initialize animations and load result on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            loadApiResult();
+        });
+    </script>
+</body>
+</html>
